@@ -24,4 +24,22 @@
         </#if>
     ]]>
     </sql>
+
+    <sql id="TestTab.testQuery1" type="groovy">
+    <![CDATA[
+        select * from test_tab t where 1 = 1
+        <% if (codes) { %>
+            and t.code in (#{joinParam(codes, ",")})
+        <% } %>
+    ]]>
+    </sql>
+
+    <sql id="TestTab.testQuery2" type="freemarker">
+        <![CDATA[
+        select * from test_tab t where 1 = 1
+        <#if codes??>
+            and t.code in (#{joinParam(codes, ",")})
+        </#if>
+    ]]>
+    </sql>
 </sqls>

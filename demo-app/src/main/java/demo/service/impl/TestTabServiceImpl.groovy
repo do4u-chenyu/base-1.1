@@ -93,4 +93,18 @@ class TestTabServiceImpl implements TestTabService {
                 name: name
         ]);
     }
+
+    @Override
+    List<TestTab> findByCodes(List<String> codes) {
+        // 测试groovy模板
+        def list = dao.query("TestTab.testQuery1", [
+                codes: codes
+        ], TestTab.class);
+        // 测试freemarker模板
+        list = dao.query("TestTab.testQuery2", [
+                codes: codes
+        ], TestTab.class);
+
+        return list;
+    }
 }

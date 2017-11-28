@@ -56,4 +56,9 @@ public interface TestTabService {
      */
     List<TestTab> findAllByCodeAndName(String code, String name);
 
+    /**
+     * 根据多个代码查询
+     */
+    List<TestTab> findByCodes(List<String> codes);
+
 }

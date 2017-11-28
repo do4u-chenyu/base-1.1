@@ -40,18 +40,34 @@ public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine implement
     protected String processTemplate(String tpl) {
         tpl = super.processTemplate(tpl);
 
-        // 增加闭包，构建SQL参数占位符
-        tpl = "<% def buildParam = { val, paramMap -> return paramMap.buildParam(val); }; %> \n" + tpl;
+        String closure = "";
+        // 闭包buildParam：将参数转换成占位符
+        closure += "<% def buildParam = { val, paramMap -> return paramMap.buildParam(val); }; %>";
+        // 闭包joinParam：将集合参数通过分隔符连接成字符串，集合中的每个参数转换成占位符
+        closure += "<% def joinParam = {collection, separator, paramMap -> " +
+                "def list = []; " +
+                "collection.each({ it -> list << buildParam(it, paramMap);}); " +
+                "return list.join(separator); " +
+                "}; %>";
 
-        return tpl;
+        return closure + "\n" + tpl;
     }
 
     /**
-     * 将#{xxx}替换成${buildParam(xxx, paramMap)}
+     * 将#{xxx}替换成${xxx}的形式
      */
     @Override
     protected String replaceParam(String param) {
-        return "${buildParam(" + param + ", paramMap)}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("${");
+        if (param.startsWith("joinParam")) {
+            sb.append(param.substring(0, param.length() - 1)).append(", paramMap)");
+        } else {
+            sb.append("buildParam(").append(param).append(", paramMap)");
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 
 }

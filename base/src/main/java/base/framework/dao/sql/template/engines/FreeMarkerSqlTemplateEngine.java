@@ -27,6 +27,7 @@ public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine imple
         Map<String, Object> ctx = new HashMap<String, Object>();
         ParamMap paramMap = new ParamMap("param");
         ctx.put("buildParam", new BuildParamMethod(paramMap));
+        ctx.put("joinParam", new JoinParamMethod(paramMap));
         ctx.putAll(model);
 
         TemplateEngine engine = TemplateEngineFactory.getEngine("freemarker");
@@ -40,7 +41,16 @@ public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine imple
      */
     @Override
     protected String replaceParam(String param) {
-        return "${buildParam(" + param + ")}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("${");
+        if (param.startsWith("joinParam")) {
+            sb.append(param.substring(0, param.length() - 1)).append(")");
+        } else {
+            sb.append("buildParam(").append(param).append(")");
+        }
+        sb.append("}");
+
+        return sb.toString();
     }
 
     /**
@@ -68,6 +78,41 @@ public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine imple
             }
             return null;
         }
+    }
+
+    /**
+     * freemarker模板自定义函数：将集合参数通过分隔符连接成字符串，集合中的每个参数转换成占位符
+     */
+    private class JoinParamMethod implements TemplateMethodModelEx {
+
+        private ParamMap paramMap;
+
+        public JoinParamMethod(ParamMap paramMap) {
+            this.paramMap = paramMap;
+        }
+
+        @Override
+        public Object exec(List list) throws TemplateModelException {
+            StringBuilder sb = new StringBuilder();
+            if (list.size() == 2) {
+                TemplateSequenceModel c = (TemplateSequenceModel) list.get(0);
+                String separator = ((TemplateScalarModel) list.get(1)).getAsString();
+                for (int i = 0; i < c.size(); i++) {
+                    Object val = c.get(i);
+                    if (val instanceof TemplateScalarModel) {
+                        val = ((TemplateScalarModel) val).getAsString();
+                    } else if (val instanceof TemplateNumberModel) {
+                        val = ((TemplateNumberModel) val).getAsNumber().doubleValue();
+                    }
+                    sb.append(paramMap.buildParam(val));
+                    if (i < c.size() - 1) {
+                        sb.append(separator);
+                    }
+                }
+            }
+            return sb.toString();
+        }
+
     }
 
 }

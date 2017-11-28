@@ -47,12 +47,15 @@ class TestController {
         // 测试findBy和findAllBy方法
         def po = testTabService.findByCodeAndName("test", "test001");
         def poList = testTabService.findAllByCodeAndName("test001", "测试111");
+        // 测试findByCodes方法
+        def otherList = testTabService.findByCodes(["test001", "test002", "c"]);
 
         return [
-                list   : list,
-                tabList: tabList,
-                po     : po,
-                poList : poList
+                list     : list,
+                tabList  : tabList,
+                po       : po,
+                poList   : poList,
+                otherList: otherList
         ];
     }
 
