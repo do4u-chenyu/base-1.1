@@ -29,7 +29,11 @@
     <![CDATA[
         select * from test_tab t where 1 = 1
         <% if (codes) { %>
-            and t.code in (#{joinParam(codes, ",")})
+            and t.code in (
+            <% forEach(data: codes, separator: ",", handler: { it -> %>
+                #{it}
+            <% });%>
+            )
         <% } %>
     ]]>
     </sql>
@@ -38,7 +42,18 @@
         <![CDATA[
         select * from test_tab t where 1 = 1
         <#if codes??>
-            and t.code in (#{joinParam(codes, ",")})
+            and t.code in (
+            <@forEach data="codes" item="it" separator=",">
+                #{it}
+            </@forEach>
+            )
+        </#if>
+        <#if names??>
+            and (
+            <@forEach data="names" item="it" separator="or">
+                t.name like #{it} || '%'
+            </@forEach>
+            )
         </#if>
     ]]>
     </sql>

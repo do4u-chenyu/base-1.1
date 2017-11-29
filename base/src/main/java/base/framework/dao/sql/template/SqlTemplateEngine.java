@@ -11,6 +11,6 @@ public interface SqlTemplateEngine {
     /**
      * 解析SQL模板
      */
-    SqlResult make(SqlTemplate template, Map<String, Object> model);
+    SqlResult make(SqlTemplate sqlTemplate, Map<String, Object> model);
 
 }

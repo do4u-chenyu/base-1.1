@@ -16,31 +16,39 @@ public abstract class PreparedSqlTemplateEngine implements SqlTemplateEngine {
 
     protected Log logger = LogFactory.getLog(PreparedSqlTemplateEngine.class);
 
-    /* 预处理的SQL模板缓存容器 */
-    private Map<String, String> tplCache = new HashMap<String, String>();
+    /* 模板对象缓存容器 */
+    private Map<String, Object> templateCache = new HashMap<String, Object>();
 
     /**
-     * 预处理SQL模板，将模板中的#{xxx}中xxx取出替换成其他形式（缓存预处理后的模板）
+     * 获取预处理编译后的模板对象
      */
-    protected String prepareTemplate(SqlTemplate template) {
-        String id = template.getId();
-        String tpl = tplCache.get(id);
+    protected Object getTemplate(SqlTemplate sqlTemplate) throws Exception {
+        String id = sqlTemplate.getId();
+        Object template = templateCache.get(id);
 
-        if (null == tpl) {
-            synchronized (tplCache) {
-                tpl = tplCache.get(id);
-                if (null == tpl) {
-                    tpl = template.getTpl();
+        if (null == template) {
+            synchronized (templateCache) {
+                template = templateCache.get(id);
+                if (null == template) {
+                    String tpl = sqlTemplate.getTpl();
                     logger.info("原始的SQL模板：" + tpl);
                     tpl = this.processTemplate(tpl);
                     logger.info("预处理后的SQL模板：" + tpl);
-                    tplCache.put(id, tpl);
+
+                    logger.info("创建模板对象");
+                    template = this.createTemplate(tpl);
+                    templateCache.put(id, template);
                 }
             }
         }
 
-        return tpl;
+        return template;
     }
+
+    /**
+     * 创建模板对象
+     */
+    protected abstract Object createTemplate(String tpl) throws Exception;
 
     /**
      * 处理模板，将模板中的#{xxx}中xxx取出替换成其他形式

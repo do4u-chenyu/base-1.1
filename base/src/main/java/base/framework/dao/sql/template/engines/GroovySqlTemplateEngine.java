@@ -4,9 +4,10 @@ import base.framework.dao.sql.template.ParamMap;
 import base.framework.dao.sql.template.SqlResult;
 import base.framework.dao.sql.template.SqlTemplate;
 import base.framework.dao.sql.template.SqlTemplateEngine;
-import base.utils.template.TemplateEngine;
-import base.utils.template.TemplateEngineFactory;
+import groovy.text.GStringTemplateEngine;
+import groovy.text.Template;
 
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,21 +17,31 @@ import java.util.Map;
  */
 public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine implements SqlTemplateEngine {
 
-    @Override
-    public SqlResult make(SqlTemplate template, Map<String, Object> model) {
-        // 预处理SQL模板
-        String tpl = this.prepareTemplate(template);
+    private groovy.text.TemplateEngine engine = new GStringTemplateEngine();
 
+    @Override
+    public SqlResult make(SqlTemplate sqlTemplate, Map<String, Object> model) {
         // 构建模板执行上下文
         Map<String, Object> ctx = new HashMap<String, Object>();
         ParamMap paramMap = new ParamMap("param");
         ctx.put("paramMap", paramMap);
         ctx.putAll(model);
 
-        TemplateEngine engine = TemplateEngineFactory.getEngine("groovy");
-        String sql = engine.evaluate(tpl, ctx, true);
+        StringWriter sw = new StringWriter();
+        try {
+            Template template = (Template) this.getTemplate(sqlTemplate);
+            template.make(ctx).writeTo(sw);
+        } catch (Exception e) {
+            throw new RuntimeException("模板执行失败\n" + sqlTemplate.getTpl() + "\n" + e.getLocalizedMessage(), e);
+        }
+        String sql = sw.toString();
 
         return new SqlResult(sql, paramMap);
+    }
+
+    @Override
+    protected Object createTemplate(String tpl) throws Exception {
+        return engine.createTemplate(tpl);
     }
 
     /**
@@ -43,31 +54,27 @@ public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine implement
         String closure = "";
         // 闭包buildParam：将参数转换成占位符
         closure += "<% def buildParam = { val, paramMap -> return paramMap.buildParam(val); }; %>";
-        // 闭包joinParam：将集合参数通过分隔符连接成字符串，集合中的每个参数转换成占位符
-        closure += "<% def joinParam = {collection, separator, paramMap -> " +
-                "def list = []; " +
-                "collection.each({ it -> list << buildParam(it, paramMap);}); " +
-                "return list.join(separator); " +
+        // 闭包forEach，迭代集合输出，每次输出间隔追加分隔符
+        closure += "<% def forEach = { params -> " +
+                "def data = params.data, " +
+                "separator = params.separator?: '', " +
+                "handler = params.handler," +
+                "it = data instanceof Map ? data.entrySet().iterator() : data.iterator();" +
+                "while (it.hasNext()) {" +
+                "handler(it.next());" +
+                "if (it.hasNext()) { out << separator;}" +
+                "}" +
                 "}; %>";
 
         return closure + "\n" + tpl;
     }
 
     /**
-     * 将#{xxx}替换成${xxx}的形式
+     * 将#{xxx}替换成${buildParam(xxx, paramMap)}的形式
      */
     @Override
     protected String replaceParam(String param) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("${");
-        if (param.startsWith("joinParam")) {
-            sb.append(param.substring(0, param.length() - 1)).append(", paramMap)");
-        } else {
-            sb.append("buildParam(").append(param).append(", paramMap)");
-        }
-        sb.append("}");
-
-        return sb.toString();
+        return "${buildParam(" + param + ", paramMap)}";
     }
 
 }

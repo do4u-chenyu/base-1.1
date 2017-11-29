@@ -102,7 +102,8 @@ class TestTabServiceImpl implements TestTabService {
         ], TestTab.class);
         // 测试freemarker模板
         list = dao.query("TestTab.testQuery2", [
-                codes: codes
+                codes: codes,
+                names: ["afe", "cc"]
         ], TestTab.class);
 
         return list;
