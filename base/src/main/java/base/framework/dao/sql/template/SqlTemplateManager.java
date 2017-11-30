@@ -29,6 +29,9 @@ public class SqlTemplateManager {
     /* 默认的模板类型 */
     private static String defaultTemplateType;
 
+    /* SQL配置文件路径 */
+    private static String sqlPath;
+
     /* 模板容器 */
     private static Map<String, SqlTemplate> templateMap = new HashMap<String, SqlTemplate>();
 
@@ -41,11 +44,18 @@ public class SqlTemplateManager {
     /**
      * 初始化
      */
-    public static void init(String sqlPath) {
-        /**
-         * 加载pathPattern目录下的配置文件
-         * 一般为classpath:xxx/xx/*.xml这样格式的路径；多模块多classpath时，格式如：classpath*:xxx/xx/*.xml；
-         */
+    public static void init(String path, String templateType) {
+        defaultTemplateType = templateType;
+        sqlPath = path;
+
+        load();
+    }
+
+    /**
+     * 加载sql配置文件
+     * 一般为classpath:xxx/xx/*.xml这样格式的路径；多模块多classpath时，格式如：classpath*:xxx/xx/*.xml；
+     */
+    public static void load() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         SAXReader saxReader = new SAXReader();
         // 待关闭的流列表
@@ -70,6 +80,17 @@ public class SqlTemplateManager {
     }
 
     /**
+     * 重新加载sql配置文件
+     */
+    public static void reload() {
+        for (SqlTemplateEngine engine : engineMap.values()) {
+            engine.clearCache();
+        }
+
+        load();
+    }
+
+    /**
      * 根据sqlId获取sql模板处理结果
      */
     public static SqlResult getSqlResult(String sqlId, Map<String, Object> params) {
@@ -81,16 +102,7 @@ public class SqlTemplateManager {
         // 调用对应的SQL模板引擎执行，创建SQL
         String type = template.getType();
         SqlTemplateEngine engine = engineMap.get(type);
-        SqlResult rs = engine.make(template, params);
-
-        return rs;
-    }
-
-    /**
-     * 设置默认模板类型
-     */
-    public static void setDefaultTemplateType(String templateType) {
-        defaultTemplateType = templateType;
+        return engine.make(template, params);
     }
 
     /**

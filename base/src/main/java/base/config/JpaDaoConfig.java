@@ -34,8 +34,7 @@ public class JpaDaoConfig {
         // SQL语句支持工厂设置默认数据库类型
         SqlSupportFactory.setDefaultType(dbType);
         // SQL模板管理器初始化
-        SqlTemplateManager.setDefaultTemplateType(templateType);
-        SqlTemplateManager.init(sqlPath);
+        SqlTemplateManager.init(sqlPath, templateType);
 
         JpaDao dao = new JpaDao();
         dao.setEntityManager(entityManager);

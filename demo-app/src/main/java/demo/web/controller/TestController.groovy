@@ -2,6 +2,7 @@ package demo.web.controller;
 
 import base.framework.cache.CacheService;
 import base.framework.cache.CacheServiceManager
+import base.framework.dao.sql.template.SqlTemplateManager
 import base.framework.model.Page
 import base.framework.service.util.PacketTransferService
 import base.utils.ObjectUtils
@@ -47,15 +48,12 @@ class TestController {
         // 测试findBy和findAllBy方法
         def po = testTabService.findByCodeAndName("test", "test001");
         def poList = testTabService.findAllByCodeAndName("test001", "测试111");
-        // 测试findByCodes方法
-        def otherList = testTabService.findByCodes(["test001", "test002", "c"]);
 
         return [
-                list     : list,
-                tabList  : tabList,
-                po       : po,
-                poList   : poList,
-                otherList: otherList
+                list   : list,
+                tabList: tabList,
+                po     : po,
+                poList : poList
         ];
     }
 
@@ -349,6 +347,22 @@ class TestController {
     Object testReceiveProxyParam(HttpServletRequest req) {
         return [
                 code: req.getParameter("code")
+        ];
+    }
+
+    @ResponseBody
+    Object testForEach() {
+        def list = testTabService.findByCodes(["test001", "test002", "c"]);
+        return [
+                list: list
+        ];
+    }
+
+    @ResponseBody
+    Object clearTemplateCache() {
+        SqlTemplateManager.reload();
+        return [
+                message: "SQL模板重新加载成功"
         ];
     }
 

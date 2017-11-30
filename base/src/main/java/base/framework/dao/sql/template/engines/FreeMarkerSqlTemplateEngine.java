@@ -2,7 +2,6 @@ package base.framework.dao.sql.template.engines;
 
 import base.framework.dao.sql.template.ParamMap;
 import base.framework.dao.sql.template.SqlResult;
-import base.framework.dao.sql.template.SqlTemplate;
 import base.framework.dao.sql.template.SqlTemplateEngine;
 import freemarker.core.Environment;
 import freemarker.template.*;
@@ -17,12 +16,23 @@ import java.util.Map;
  * Created by cl on 2017/6/7.
  * 基于FreeMarker模板实现的SQL模板引擎
  */
-public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine implements SqlTemplateEngine {
+public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine<Template> implements SqlTemplateEngine {
 
-    private ForEachDirective forEachDirective = new ForEachDirective();
+    /* 模板的全局配置 */
+    private Configuration globalConfig;
+
+    public FreeMarkerSqlTemplateEngine() {
+        globalConfig = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+        globalConfig.setSharedVariable("forEach", new ForEachDirective());
+    }
 
     @Override
-    public SqlResult make(SqlTemplate sqlTemplate, Map<String, Object> model) {
+    protected Template createTemplate(String tpl) throws Exception {
+        return new Template("FreeMarker_" + tpl.hashCode(), tpl, globalConfig);
+    }
+
+    @Override
+    protected SqlResult callTemplate(Template template, Map<String, Object> model) throws Exception {
         // 将自定义模板函数加入上下文
         Map<String, Object> ctx = new HashMap<String, Object>();
         ParamMap paramMap = new ParamMap("param");
@@ -30,23 +40,9 @@ public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine imple
         ctx.putAll(model);
 
         StringWriter sw = new StringWriter();
-        try {
-            Template t = (Template) this.getTemplate(sqlTemplate);
-            t.process(ctx, sw);
-        } catch (Exception e) {
-            throw new RuntimeException("模板执行失败\n" + sqlTemplate.getTpl() + "\n" + e.getLocalizedMessage(), e);
-        }
+        template.process(ctx, sw);
 
-        String sql = sw.toString();
-
-        return new SqlResult(sql, paramMap);
-    }
-
-    @Override
-    protected Object createTemplate(String tpl) throws Exception {
-        Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-        cfg.setSharedVariable("forEach", forEachDirective);
-        return new Template("FreeMarker_" + tpl.hashCode(), tpl, cfg);
+        return new SqlResult(sw.toString(), paramMap);
     }
 
     /**

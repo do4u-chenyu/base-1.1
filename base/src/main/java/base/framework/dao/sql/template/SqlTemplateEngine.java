@@ -13,4 +13,9 @@ public interface SqlTemplateEngine {
      */
     SqlResult make(SqlTemplate sqlTemplate, Map<String, Object> model);
 
+    /**
+     * 清理模板缓存
+     */
+    void clearCache();
+
 }

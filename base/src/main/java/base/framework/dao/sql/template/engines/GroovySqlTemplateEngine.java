@@ -2,7 +2,6 @@ package base.framework.dao.sql.template.engines;
 
 import base.framework.dao.sql.template.ParamMap;
 import base.framework.dao.sql.template.SqlResult;
-import base.framework.dao.sql.template.SqlTemplate;
 import base.framework.dao.sql.template.SqlTemplateEngine;
 import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
@@ -15,12 +14,17 @@ import java.util.Map;
  * Created by cl on 2017/6/7.
  * 基于Groovy模板实现的SQL模板引擎
  */
-public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine implements SqlTemplateEngine {
+public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine<Template> implements SqlTemplateEngine {
 
     private groovy.text.TemplateEngine engine = new GStringTemplateEngine();
 
     @Override
-    public SqlResult make(SqlTemplate sqlTemplate, Map<String, Object> model) {
+    protected Template createTemplate(String tpl) throws Exception {
+        return engine.createTemplate(tpl);
+    }
+
+    @Override
+    protected SqlResult callTemplate(Template template, Map<String, Object> model) throws Exception {
         // 构建模板执行上下文
         Map<String, Object> ctx = new HashMap<String, Object>();
         ParamMap paramMap = new ParamMap("param");
@@ -28,20 +32,9 @@ public class GroovySqlTemplateEngine extends PreparedSqlTemplateEngine implement
         ctx.putAll(model);
 
         StringWriter sw = new StringWriter();
-        try {
-            Template template = (Template) this.getTemplate(sqlTemplate);
-            template.make(ctx).writeTo(sw);
-        } catch (Exception e) {
-            throw new RuntimeException("模板执行失败\n" + sqlTemplate.getTpl() + "\n" + e.getLocalizedMessage(), e);
-        }
-        String sql = sw.toString();
+        template.make(ctx).writeTo(sw);
 
-        return new SqlResult(sql, paramMap);
-    }
-
-    @Override
-    protected Object createTemplate(String tpl) throws Exception {
-        return engine.createTemplate(tpl);
+        return new SqlResult(sw.toString(), paramMap);
     }
 
     /**
