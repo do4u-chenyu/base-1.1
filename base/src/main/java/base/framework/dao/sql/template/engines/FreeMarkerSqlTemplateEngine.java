@@ -88,13 +88,25 @@ public class FreeMarkerSqlTemplateEngine extends PreparedSqlTemplateEngine<Templ
         @Override
         public void execute(Environment env, Map params, TemplateModel[] loopVars,
                             TemplateDirectiveBody body) throws TemplateException, IOException {
-            String dataParamName = ((TemplateScalarModel) params.get("data")).getAsString();
             String item = ((TemplateScalarModel) params.get("item")).getAsString();
             String separator = params.containsKey("separator") ?
                     ((TemplateScalarModel) params.get("separator")).getAsString() : null;
 
-            TemplateSequenceModel data = (TemplateSequenceModel) env.getVariable(dataParamName);
-            for (int i = 0; i < data.size(); i++) {
+            TemplateSequenceModel data = null;
+            Object dataParam = params.get("data");
+            // data为字符串时根据data字符串从env中取
+            if (dataParam instanceof TemplateScalarModel) {
+                dataParam = env.getVariable(((TemplateScalarModel) dataParam).getAsString());
+            }
+
+            if (dataParam instanceof TemplateSequenceModel) {
+                data = (TemplateSequenceModel) dataParam;
+            } else if (dataParam instanceof TemplateHashModel) {
+                data = new SimpleSequence(((SimpleHash) dataParam).toMap().entrySet(),
+                        new DefaultObjectWrapper(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS));
+            }
+
+            for (int i = 0; null != data && i < data.size(); i++) {
                 TemplateModel obj = data.get(i);
                 env.setVariable(item, obj);
                 env.setVariable(item + "_index", new SimpleNumber(i));

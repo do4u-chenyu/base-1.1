@@ -48,10 +48,17 @@
             </@forEach>
             )
         </#if>
-        <#if names??>
+        <#if extData.names??>
             and (
-            <@forEach data="names" item="it" separator="or">
+            <@forEach data=extData.names item="it" separator="or">
                 t.name like #{it} || '%'
+            </@forEach>
+            )
+        </#if>
+        <#if fields??>
+            and (
+            <@forEach data=fields item="it" separator="and">
+                t.name not like #{it.value} || '%'
             </@forEach>
             )
         </#if>
