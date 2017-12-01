@@ -19,41 +19,19 @@
         <module>demo-app</module>
         <module>admin-api</module>
         <module>admin-app</module>
+        <module>motan-demo-api</module>
+        <module>motan-demo-server</module>
+        <module>motan-demo-client</module>
     </modules>
     <packaging>pom</packaging>
 
     <properties>
         <main.version>1.1</main.version>
         <groovy.version>2.4.7</groovy.version>
+        <motan.version>1.0.0</motan.version>
     </properties>
 
-    <repositories>
-        <!--
-        <repository>
-            <id>dev</id>
-            <name>sinosoftgz</name>
-            <url>http://dev.sinosoftgz.com/nexus/content/groups/public/</url>
-        </repository>
-
-        <repository>
-            <id>dev3</id>
-            <name>sinosoftgz3</name>
-            <url>http://dev.sinosoftgz.com/nexus/content/repositories/thirdparty/</url>
-        </repository>
-
-        <repository>
-            <id>os</id>
-            <name>os</name>
-            <url>http://maven.oschina.net/content/groups/public/</url>
-        </repository>
-        -->
-        <!-- Repository For Oracle JDBC
-        <repository>
-            <id>codelds</id>
-            <url>https://code.lds.org/nexus/content/groups/main-repo</url>
-        </repository>
-        -->
-    </repositories>
+    <repositories></repositories>
 
     <build>
         <pluginManagement>
@@ -265,6 +243,32 @@
                 <artifactId>jaxen</artifactId>
                 <version>1.1.1</version>
             </dependency>
+
+            <!--================ motan微服务框架 - begin ================-->
+            <dependency>
+                <groupId>com.weibo</groupId>
+                <artifactId>motan-core</artifactId>
+                <version>${motan.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.weibo</groupId>
+                <artifactId>motan-transport-netty</artifactId>
+                <version>${motan.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.weibo</groupId>
+                <artifactId>motan-springsupport</artifactId>
+                <version>${motan.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.weibo</groupId>
+                <artifactId>motan-registry-zookeeper</artifactId>
+                <version>${motan.version}</version>
+            </dependency>
+            <!--================ motan微服务框架 - end ================-->
         </dependencies>
     </dependencyManagement>
 

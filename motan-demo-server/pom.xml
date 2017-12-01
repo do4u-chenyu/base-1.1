@@ -9,32 +9,53 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>base</artifactId>
     <groupId>base.framework</groupId>
+    <artifactId>motan-demo-server</artifactId>
     <version>${main.version}</version>
     <packaging>jar</packaging>
 
     <build>
-        <!-- 打包时包含java目录下的所有文件 -->
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-            </resource>
+        <plugins>
+            <!-- spring boot 项目启动，自动打包成可运行jar -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
 
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
+            <!-- 继承父pom的groovy打包插件 -->
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencies>
+        <!-- 自定义扩展组件依赖 -->
+        <dependency>
+            <groupId>base.framework</groupId>
+            <artifactId>base</artifactId>
+            <version>${main.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>base.framework</groupId>
+            <artifactId>motan-demo-api</artifactId>
+            <version>${main.version}</version>
+        </dependency>
+
         <!--=================== spring boot组件 - begin ===================-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <!-- TODO 部署到web容器时不需要tomcat依赖包
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+            -->
         </dependency>
 
         <dependency>
@@ -96,10 +117,17 @@
             <artifactId>groovy-all</artifactId>
         </dependency>
 
-        <!-- json解析：fastjson -->
+        <!-- servlet api -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- google集合框架库 -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
         <!-- ehache缓存 -->
@@ -108,20 +136,16 @@
             <artifactId>ehcache</artifactId>
         </dependency>
 
-        <!-- quartz定时任务 -->
+        <!-- json解析：fastjson -->
         <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz-jobs</artifactId>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
         </dependency>
 
-        <!-- google集合框架库 -->
+        <!-- shiro安全框架 -->
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-spring</artifactId>
         </dependency>
 
         <!-- H2内存数据库 -->
@@ -137,6 +161,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- druid连接池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+        </dependency>
+
         <!-- oracle jdbc驱动
         <dependency>
             <groupId>oracle.jdbc.driver</groupId>
@@ -144,62 +174,27 @@
         </dependency>
         -->
 
-        <!-- shiro安全框架 -->
+        <!-- quartz定时任务
         <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-spring</artifactId>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz-jobs</artifactId>
+        </dependency>
+        -->
 
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-        </dependency>
-
-        <!--================ motan微服务框架 - begin ================-->
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>motan-core</artifactId>
+            <!-- weblogic下部署有冲突，需要排除包依赖 -->
             <exclusions>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>com.ibm.icu</groupId>
+                    <artifactId>icu4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>motan-transport-netty</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>motan-springsupport</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.weibo</groupId>
-            <artifactId>motan-registry-zookeeper</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!--================ motan微服务框架 - end ================-->
     </dependencies>
-    
 </project>

@@ -190,4 +190,31 @@ public class ObjectUtils {
 
     }
 
+    /**
+     * 拷贝属性
+     */
+    public static void copyProperties(Object src, Object target) {
+        List<Field> fields = ObjectUtils.getFields(src);
+        Class<?> srcClazz = src.getClass();
+        Class<?> targetClazz = target.getClass();
+
+        for (Field f : fields) {
+            String fieldName = f.getName();
+            try {
+                f.setAccessible(true);
+                Object val = f.get(src);
+
+                if (null != val) {
+                    String methodName = "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+                    Method method = targetClazz.getMethod(methodName, f.getType());
+                    method.invoke(target, val);
+                }
+            } catch (NoSuchMethodException e) {
+                logger.warn("[" + srcClazz.getName() + "]属性" + fieldName + "不存在或对应的set方法不存在");
+            } catch (Exception e) {
+                logger.error("[" + srcClazz.getName() + "]属性" + fieldName + "拷贝失败" + e.getLocalizedMessage(), e);
+            }
+        }
+    }
+
 }
