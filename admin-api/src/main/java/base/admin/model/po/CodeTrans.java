@@ -32,22 +32,10 @@ public class CodeTrans extends AbstractIdEntity implements Serializable {
     private String parentCode;
 
     /**
-     * 中文名
+     * 名称
      */
-    @Column(name = "codecname")
-    private String codeCName;
-
-    /**
-     * 英文名
-     */
-    @Column(name = "codeename")
-    private String codeEName;
-
-    /**
-     * 繁体中文名
-     */
-    @Column(name = "codetname")
-    private String codeTName;
+    @Column(name = "codename")
+    private String codeName;
 
     /**
      * 标志
@@ -64,7 +52,7 @@ public class CodeTrans extends AbstractIdEntity implements Serializable {
     /**
      * 显示序号
      */
-    @Column(name = "displayno")
+    @Column(name = "display_no")
     private Integer displayNo;
 
     /**
@@ -103,28 +91,12 @@ public class CodeTrans extends AbstractIdEntity implements Serializable {
         this.parentCode = parentCode;
     }
 
-    public String getCodeCName() {
-        return codeCName;
+    public String getCodeName() {
+        return codeName;
     }
 
-    public void setCodeCName(String codeCName) {
-        this.codeCName = codeCName;
-    }
-
-    public String getCodeEName() {
-        return codeEName;
-    }
-
-    public void setCodeEName(String codeEName) {
-        this.codeEName = codeEName;
-    }
-
-    public String getCodeTName() {
-        return codeTName;
-    }
-
-    public void setCodeTName(String codeTName) {
-        this.codeTName = codeTName;
+    public void setCodeName(String codeName) {
+        this.codeName = codeName;
     }
 
     public String getFlag() {

@@ -1,4 +1,7 @@
 -- h2数据库初始化脚本
+-- h2中注册uuid函数
+create alias uuid for "base.utils.h2.H2FunctionLib.uuid";
+
 -- Create table
 create table PACKET_INTERFACE_CONF
 (
@@ -43,12 +46,10 @@ create table C_CODETRANS
   codetype   VARCHAR2(32) not null,
   code       VARCHAR2(32) not null,
   parentcode VARCHAR2(32),
-  codecname  VARCHAR2(400) not null,
   codename   VARCHAR2(400),
-  codetname  VARCHAR2(400),
   flag       VARCHAR2(10),
   codelevel  NUMBER(4),
-  displayno  NUMBER(4),
+  display_no NUMBER(4),
   validind   CHAR(1) not null,
   remark     VARCHAR2(4000)
 );
@@ -64,17 +65,13 @@ comment on column C_CODETRANS.code
   is '代码值';
 comment on column C_CODETRANS.parentcode
   is '父节点代码';
-comment on column C_CODETRANS.codecname
-  is '中文名';
 comment on column C_CODETRANS.codename
-  is '英文名';
-comment on column C_CODETRANS.codetname
-  is '繁体中文名';
+  is '名称';
 comment on column C_CODETRANS.flag
   is '标志';
 comment on column C_CODETRANS.codelevel
   is '代码层级';
-comment on column C_CODETRANS.displayno
+comment on column C_CODETRANS.display_no
   is '显示序号';
 comment on column C_CODETRANS.validind
   is '有效标志';
