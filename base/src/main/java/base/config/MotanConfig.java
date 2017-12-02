@@ -44,7 +44,7 @@ public class MotanConfig implements ApplicationListener {
      * 协议配置
      */
     @Bean(name = MOTAN_PROTOCOL_NAME)
-    public ProtocolConfigBean protocolConfig(ProtocolProperties prop) {
+    public ProtocolConfigBean protocolConfigBean(ProtocolProperties prop) {
         ProtocolConfigBean config = new ProtocolConfigBean();
         ObjectUtils.copyProperties(prop, config);
         config.setDefault(null != prop.getDefault() ? prop.getDefault() : true);
@@ -58,7 +58,7 @@ public class MotanConfig implements ApplicationListener {
      * 注册中心配置
      */
     @Bean(name = MOTAN_REGISTRY_NAME)
-    public RegistryConfigBean registryConfig(RegistryProperties prop) {
+    public RegistryConfigBean registryConfigBean(RegistryProperties prop) {
         RegistryConfigBean config = new RegistryConfigBean();
         ObjectUtils.copyProperties(prop, config);
         config.setRegProtocol(prop.getProtocol());
@@ -70,7 +70,7 @@ public class MotanConfig implements ApplicationListener {
      */
     @Bean
     @Conditional(BasicServiceCondition.class)
-    public BasicServiceConfigBean baseServiceConfig(BasicServiceProperties prop) {
+    public BasicServiceConfigBean basicServiceConfigBean(BasicServiceProperties prop) {
         BasicServiceConfigBean config = new BasicServiceConfigBean();
         ObjectUtils.copyProperties(prop, config);
         // 未设置export时，默认使用protocol的名字:端口号
