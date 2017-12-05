@@ -23,7 +23,12 @@ import org.springframework.context.annotation.Configuration;
  * motan初始化配置
  */
 @Configuration
-@EnableConfigurationProperties({ProtocolProperties.class, RegistryProperties.class, BasicServiceProperties.class, BasicRefererProperties.class})
+@EnableConfigurationProperties({
+        ProtocolProperties.class,
+        RegistryProperties.class,
+        BasicServiceProperties.class,
+        BasicRefererProperties.class
+})
 public class MotanConfig implements ApplicationListener {
 
     private final static String MOTAN_PROTOCOL_NAME = "_motan_protocol_motan_";
@@ -44,7 +49,7 @@ public class MotanConfig implements ApplicationListener {
      * 协议配置
      */
     @Bean(name = MOTAN_PROTOCOL_NAME)
-    public ProtocolConfigBean protocolConfigBean(ProtocolProperties prop) {
+    public ProtocolConfigBean protocolConfig(ProtocolProperties prop) {
         ProtocolConfigBean config = new ProtocolConfigBean();
         ObjectUtils.copyProperties(prop, config);
         config.setDefault(null != prop.getDefault() ? prop.getDefault() : true);
@@ -58,7 +63,7 @@ public class MotanConfig implements ApplicationListener {
      * 注册中心配置
      */
     @Bean(name = MOTAN_REGISTRY_NAME)
-    public RegistryConfigBean registryConfigBean(RegistryProperties prop) {
+    public RegistryConfigBean registryConfig(RegistryProperties prop) {
         RegistryConfigBean config = new RegistryConfigBean();
         ObjectUtils.copyProperties(prop, config);
         config.setRegProtocol(prop.getProtocol());
@@ -70,7 +75,7 @@ public class MotanConfig implements ApplicationListener {
      */
     @Bean
     @Conditional(BasicServiceCondition.class)
-    public BasicServiceConfigBean basicServiceConfigBean(BasicServiceProperties prop) {
+    public BasicServiceConfigBean basicServiceConfig(BasicServiceProperties prop) {
         BasicServiceConfigBean config = new BasicServiceConfigBean();
         ObjectUtils.copyProperties(prop, config);
         // 未设置export时，默认使用protocol的名字:端口号
@@ -86,7 +91,7 @@ public class MotanConfig implements ApplicationListener {
      * RPC服务的引用配置
      */
     @Bean
-    public BasicRefererConfigBean basicRefererConfigBean(BasicRefererProperties prop) {
+    public BasicRefererConfigBean basicRefererConfig(BasicRefererProperties prop) {
         BasicRefererConfigBean config = new BasicRefererConfigBean();
         ObjectUtils.copyProperties(prop, config);
         config.setProtocol(MOTAN_PROTOCOL_NAME);

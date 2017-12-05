@@ -27,6 +27,9 @@ public class BasicServiceProperties {
 
     private Boolean shareChannel;
 
+    /* 默认请求超时时间15s */
+    private Integer requestTimeout = 15000;
+
     public String getExport() {
         return export;
     }
@@ -89,6 +92,14 @@ public class BasicServiceProperties {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public void setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
 }

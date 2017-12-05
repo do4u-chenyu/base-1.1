@@ -33,6 +33,9 @@ public class BasicRefererProperties {
 
     private String proxy;
 
+    /* 默认请求超时时间15s */
+    private Integer requestTimeout = 15000;
+
     public String getApplication() {
         return application;
     }
@@ -127,6 +130,14 @@ public class BasicRefererProperties {
 
     public void setProxy(String proxy) {
         this.proxy = proxy;
+    }
+
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public void setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
 }
