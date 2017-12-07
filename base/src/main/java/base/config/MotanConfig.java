@@ -31,9 +31,9 @@ import org.springframework.context.annotation.Configuration;
 })
 public class MotanConfig implements ApplicationListener {
 
-    private final static String MOTAN_PROTOCOL_NAME = "_motan_protocol_motan_";
+    public final static String PROTOCOL_NAME = "_motan_protocol_motan_";
 
-    private final static String MOTAN_REGISTRY_NAME = "_motan_registry_";
+    public final static String REGISTRY_NAME = "_motan_registry_";
 
     /**
      * 注解类扫描包配置
@@ -48,7 +48,7 @@ public class MotanConfig implements ApplicationListener {
     /**
      * 协议配置
      */
-    @Bean(name = MOTAN_PROTOCOL_NAME)
+    @Bean(name = PROTOCOL_NAME)
     public ProtocolConfigBean protocolConfig(ProtocolProperties prop) {
         ProtocolConfigBean config = new ProtocolConfigBean();
         ObjectUtils.copyProperties(prop, config);
@@ -62,7 +62,7 @@ public class MotanConfig implements ApplicationListener {
     /**
      * 注册中心配置
      */
-    @Bean(name = MOTAN_REGISTRY_NAME)
+    @Bean(name = REGISTRY_NAME)
     public RegistryConfigBean registryConfig(RegistryProperties prop) {
         RegistryConfigBean config = new RegistryConfigBean();
         ObjectUtils.copyProperties(prop, config);
@@ -78,11 +78,9 @@ public class MotanConfig implements ApplicationListener {
     public BasicServiceConfigBean basicServiceConfig(BasicServiceProperties prop) {
         BasicServiceConfigBean config = new BasicServiceConfigBean();
         ObjectUtils.copyProperties(prop, config);
-        // 未设置export时，默认使用protocol的名字:端口号
-        if (StringUtils.isEmpty(prop.getExport())) {
-            config.setExport(MOTAN_PROTOCOL_NAME + ":" + prop.getExportPort());
-        }
-        config.setRegistry(MOTAN_REGISTRY_NAME);
+        // 设置export，默认使用protocol的名字:端口号
+        config.setExport(PROTOCOL_NAME + ":" + (null != prop.getPort() ? prop.getPort() : 8002));
+        config.setRegistry(REGISTRY_NAME);
 
         return config;
     }
@@ -94,8 +92,8 @@ public class MotanConfig implements ApplicationListener {
     public BasicRefererConfigBean basicRefererConfig(BasicRefererProperties prop) {
         BasicRefererConfigBean config = new BasicRefererConfigBean();
         ObjectUtils.copyProperties(prop, config);
-        config.setProtocol(MOTAN_PROTOCOL_NAME);
-        config.setRegistry(MOTAN_REGISTRY_NAME);
+        config.setProtocol(PROTOCOL_NAME);
+        config.setRegistry(REGISTRY_NAME);
         return config;
     }
 

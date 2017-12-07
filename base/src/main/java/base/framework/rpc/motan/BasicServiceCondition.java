@@ -14,7 +14,7 @@ public class BasicServiceCondition implements Condition {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metaData) {
         Environment env = context.getEnvironment();
-        return null != env.getProperty("motan.basicService.exportPort") || null != env.getProperty("motan.basicService.export");
+        return null != env.getProperty("motan.basicService.port");
     }
 
 }

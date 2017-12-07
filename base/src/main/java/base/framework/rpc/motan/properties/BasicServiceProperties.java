@@ -9,11 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "motan.basicService")
 public class BasicServiceProperties {
 
-    /* 服务发布的方式，协议:端口号 */
-    private String export;
-
     /* 服务发布的端口号 */
-    private Integer exportPort;
+    private Integer port;
 
     private String application;
 
@@ -25,25 +22,18 @@ public class BasicServiceProperties {
 
     private Boolean accessLog;
 
-    private Boolean shareChannel;
+    /* 默认共享通道，就不需要为每个@MotanService设置export */
+    private Boolean shareChannel = true;
 
     /* 默认请求超时时间15s */
     private Integer requestTimeout = 15000;
 
-    public String getExport() {
-        return export;
+    public Integer getPort() {
+        return port;
     }
 
-    public void setExport(String export) {
-        this.export = export;
-    }
-
-    public Integer getExportPort() {
-        return exportPort;
-    }
-
-    public void setExportPort(Integer exportPort) {
-        this.exportPort = exportPort;
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public String getGroup() {
