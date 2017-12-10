@@ -217,4 +217,23 @@ public class ObjectUtils {
         }
     }
 
+    /**
+     * 根据类名创建该类的实例
+     */
+    public static Object createClass(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return clazz.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    /**
+     * 根据类名创建该类的实例
+     */
+    public static <T> T createClass(String className, Class<T> clazz) {
+        return (T) createClass(className);
+    }
+
 }

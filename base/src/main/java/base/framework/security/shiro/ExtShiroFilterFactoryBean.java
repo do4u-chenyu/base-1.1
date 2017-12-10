@@ -31,7 +31,7 @@ public class ExtShiroFilterFactoryBean extends ShiroFilterFactoryBean {
         this.setFilters(filters);
 
         // 过滤链规则配置
-        this.setFilterChainDefinitionMap(cfg.getFilterChainDefinitions());
+        this.setFilterChainDefinitionMap(cfg.getFilterChainDefinitionMap());
 
         // 设置登录页面
         this.setLoginUrl(cfg.getLoginUrl());

@@ -20,6 +20,13 @@
         /**=authc
     </filterChainDefinition>
 
+    <!-- 过滤链规则配置（从数据库读取配置）
+    <filterChainDefinition type="db">
+        select t.url, t.filter from shiro_filter_chain t;
+    </filterChainDefinition>
+    -->
+
+
     <!-- 登录页面 -->
     <loginUrl>/timeout.html</loginUrl>
     <!-- 登录成功后的跳转页面 -->

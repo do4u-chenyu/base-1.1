@@ -1,9 +1,8 @@
 package base.config;
 
-import base.framework.security.shiro.DefaultPasswordEncryptor;
-import base.framework.security.shiro.ExtShiroFilterFactoryBean;
-import base.framework.security.shiro.PasswordEncryptor;
-import base.framework.security.shiro.ShiroConfiguration;
+import base.framework.security.shiro.*;
+import base.framework.security.shiro.definition.DbFilterChainDefMapBean;
+import base.framework.security.shiro.definition.DefaultFilterChainDefMapBean;
 import base.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
 
 /**
@@ -32,12 +32,11 @@ public class ShiroConfig {
     @Autowired(required = false)
     private CredentialsMatcher credentialsMatcher;
 
-    private ShiroConfiguration config;
+    @Autowired(required = false)
+    private FilterChainDefinitionMapBean definitionMapBean;
 
     @Bean(name = "shiroFilter")
-    public ShiroFilterFactoryBean shiroFilter() {
-        ShiroConfiguration cfg = this.getConfig();
-
+    public ShiroFilterFactoryBean shiroFilter(ShiroConfiguration cfg) {
         try {
             ExtShiroFilterFactoryBean factoryBean = new ExtShiroFilterFactoryBean(cfg);
             factoryBean.createDefaultSecurityManager(realm, credentialsMatcher);
@@ -53,23 +52,24 @@ public class ShiroConfig {
      */
     @Bean
     @ConditionalOnMissingBean(PasswordEncryptor.class)
-    public PasswordEncryptor passwordEncryptor() {
-        ShiroConfiguration cfg = this.getConfig();
+    public PasswordEncryptor passwordEncryptor(ShiroConfiguration cfg) {
         ShiroConfiguration.PasswordEncryption pe = cfg.getPasswordEncryption();
         return new DefaultPasswordEncryptor(pe.algorithmName, pe.hashIterations, pe.toHex);
     }
 
-    private ShiroConfiguration getConfig() {
-        if (null == config) {
-            try {
-                InputStream in = CommonUtils.getClassPathResourceAsStream("shiro-config.xml");
-                config = ShiroConfiguration.load(in);
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-                throw new RuntimeException("shiro-config.xml配置文件加载失败");
-            }
+    @Bean
+    public ShiroConfiguration shiroConfiguration(DataSource dataSource) {
+        try {
+            ShiroConfiguration.registerDefinitionMapBean("default", new DefaultFilterChainDefMapBean());
+            ShiroConfiguration.registerDefinitionMapBean("db", new DbFilterChainDefMapBean(dataSource));
+            ShiroConfiguration.registerDefinitionMapBean("custom", definitionMapBean);
+
+            InputStream in = CommonUtils.getClassPathResourceAsStream("shiro-config.xml");
+            return ShiroConfiguration.load(in);
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage(), e);
+            throw new RuntimeException("shiro-config.xml配置文件加载失败");
         }
-        return config;
     }
 
 }

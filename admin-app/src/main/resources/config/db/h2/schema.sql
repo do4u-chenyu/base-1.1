@@ -188,6 +188,13 @@ comment on column T_USER.remark
 alter table T_USER
   add constraint PK_T_USER primary key (ID);
 
+-- shiro权限链配置表
+create table shiro_filter_chain
+(
+  url     varchar2(1000),
+  filter  varchar2(1000)
+);
+
 
 
 

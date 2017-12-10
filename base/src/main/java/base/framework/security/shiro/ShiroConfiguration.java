@@ -1,10 +1,12 @@
 package base.framework.security.shiro;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,7 +19,7 @@ public class ShiroConfiguration {
     /* 过滤器链 */
     private Map<String, String> filterChain = new LinkedHashMap<String, String>();
     /* 过滤链规则配置 */
-    private Map<String, String> filterChainDefinitions = new LinkedHashMap<String, String>();
+    private Map<String, String> filterChainDefinitionMap;
     /* 登录页面 */
     private String loginUrl;
     /* 登录成功后的跳转页面 */
@@ -26,6 +28,9 @@ public class ShiroConfiguration {
     private String unauthorizedUrl;
     /* 密码加密策略 */
     private PasswordEncryption passwordEncryption = new PasswordEncryption();
+
+    /* FilterChainDefinitionMapBean容器 */
+    private static Map<String, FilterChainDefinitionMapBean> definitionMapBeans = new HashMap<String, FilterChainDefinitionMapBean>();
 
     private ShiroConfiguration() {
     }
@@ -56,6 +61,13 @@ public class ShiroConfiguration {
     }
 
     /**
+     * 注册FilterChainDefinitionMapBean
+     */
+    public static void registerDefinitionMapBean(String type, FilterChainDefinitionMapBean definitionMapBean) {
+        definitionMapBeans.put(type, definitionMapBean);
+    }
+
+    /**
      * 初始化
      */
     private void init(Document doc) {
@@ -69,15 +81,18 @@ public class ShiroConfiguration {
         }
 
         // 过滤链规则配置
-        Node node = doc.selectSingleNode("/shiro/filterChainDefinition");
-        String[] strArr = node.getText().split("\n");
-        for (String str : strArr) {
-            String[] arr = str.split("=");
-            if (arr.length == 2) {
-                filterChainDefinitions.put(arr[0].trim(), arr[1].trim());
-            }
+        Element node = (Element) doc.selectSingleNode("/shiro/filterChainDefinition");
+        Map<String, String> attrs = new HashMap<String, String>();
+        for (Object o : node.attributes()) {
+            Attribute attr = (Attribute) o;
+            attrs.put(attr.getName(), attr.getValue());
         }
+        String type = StringUtils.isEmpty(attrs.get("type")) ? "default" : attrs.get("type"),
+                text = node.getText();
+        FilterChainDefinitionMapBean definitionMapBean = definitionMapBeans.get(type);
+        filterChainDefinitionMap = definitionMapBean.createDefinitionMap(attrs, text);
 
+        // 设置url
         loginUrl = doc.selectSingleNode("/shiro/loginUrl").getText();
         successUrl = doc.selectSingleNode("/shiro/successUrl").getText();
         unauthorizedUrl = doc.selectSingleNode("/shiro/unauthorizedUrl").getText();
@@ -93,8 +108,8 @@ public class ShiroConfiguration {
         return filterChain;
     }
 
-    public Map<String, String> getFilterChainDefinitions() {
-        return filterChainDefinitions;
+    public Map<String, String> getFilterChainDefinitionMap() {
+        return filterChainDefinitionMap;
     }
 
     public String getLoginUrl() {
