@@ -3,7 +3,6 @@ package base.utils.codec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 
@@ -58,28 +57,25 @@ public class AESUtils {
 
 
     public static byte[] encode(byte[] source, byte[] key) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(generateKey(key).getEncoded(), "AES"));
-
+        Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, key);
         return cipher.doFinal(source);
     }
 
     public static byte[] decode(byte[] bytes, byte[] key) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(generateKey(key).getEncoded(), "AES"));
-
+        Cipher cipher = getCipher(Cipher.DECRYPT_MODE, key);
         return cipher.doFinal(bytes);
     }
 
-    /**
-     * 生成key，通过指定seed，防止在linux下报错
-     */
-    private static SecretKey generateKey(byte[] key) throws Exception {
+    private static Cipher getCipher(int mode, byte[] key) throws Exception {
+        // 通过指定seed生成key，防止在linux下报错
         KeyGenerator kgen = KeyGenerator.getInstance("AES");
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
         secureRandom.setSeed(key);
         kgen.init(128, secureRandom);
-        return kgen.generateKey();
+
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(mode, new SecretKeySpec(kgen.generateKey().getEncoded(), "AES"));
+        return cipher;
     }
 
 }
