@@ -74,6 +74,7 @@ class TestTabServiceImpl implements TestTabService {
                 po: po
         ];
         Page<TestTab> page = dao.queryPage("TestTab.findByPage", params, TestTab.class, pageNo, pageSize);
+//        Page<Object[]> objPage = dao.queryPage("TestTab.findByPage", params, pageNo, pageSize);
 
         return page;
     }

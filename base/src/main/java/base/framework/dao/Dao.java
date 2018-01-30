@@ -70,7 +70,17 @@ public interface Dao {
     /**
      * 根据sqlId分页查询（sql保存在xml配置文件中，根据sqlId查找对应的sql语句）
      */
-    <T> Page<T> queryPage(String sqlId, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize);
+    Page<Object[]> queryPage(String sqlId, Map<String, Object> params, int pageNum, int pageSize);
+
+    /**
+     * 根据sqlId分页查询（sql保存在xml配置文件中，根据sqlId查找对应的sql语句）
+     */
+    <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize);
+
+    /**
+     * 根据sqlId分页查询（sql保存在xml配置文件中，根据sqlId查找对应的sql语句）
+     */
+    <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, RowMapper<T> mapper, int pageNum, int pageSize);
 
     /**
      * 根据sqlId执行sql语句
@@ -105,7 +115,17 @@ public interface Dao {
     /**
      * 根据sql语句分页查询
      */
-    <T> Page<T> queryPageBySql(String sql, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize);
+    Page<Object[]> queryPageBySql(String sql, Map<String, Object> params, int pageNum, int pageSize);
+
+    /**
+     * 根据sql语句分页查询
+     */
+    <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize);
+
+    /**
+     * 根据sql语句分页查询
+     */
+    <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, RowMapper<T> mapper, int pageNum, int pageSize);
 
     /**
      * 执行sql语句

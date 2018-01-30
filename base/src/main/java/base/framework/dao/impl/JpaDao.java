@@ -96,9 +96,21 @@ public class JpaDao implements Dao {
     }
 
     @Override
-    public <T> Page<T> queryPage(String sqlId, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize) {
+    public Page<Object[]> queryPage(String sqlId, Map<String, Object> params, int pageNum, int pageSize) {
+        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        return this.queryPageBySql(rs.getSql(), rs.getParamMap(), pageNum, pageSize);
+    }
+
+    @Override
+    public <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize) {
         SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryPageBySql(rs.getSql(), rs.getParamMap(), clazz, pageNum, pageSize);
+    }
+
+    @Override
+    public <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, RowMapper<T> mapper, int pageNum, int pageSize) {
+        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        return this.queryPageBySql(rs.getSql(), rs.getParamMap(), mapper, pageNum, pageSize);
     }
 
     @Override
@@ -149,26 +161,33 @@ public class JpaDao implements Dao {
     }
 
     @Override
-    public <T> Page<T> queryPageBySql(String sql, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize) {
-        SqlSupport sqlSupport = SqlSupportFactory.getSupport();
-        String listSql = sqlSupport.getPageSql(sql, pageNum, pageSize);
-        String countSql = sqlSupport.getTotalSql(sql);
+    public Page<Object[]> queryPageBySql(String sql, Map<String, Object> params, int pageNum, int pageSize) {
+        return this.queryPageBySql(sql, params, pageNum, pageSize, new QueryRunner<Object[]>() {
+            @Override
+            public List<Object[]> query(String sql, Map<String, Object> params) {
+                return queryBySql(sql, params);
+            }
+        });
+    }
 
-        // 查询分页
-        List<T> resultList = this.queryBySql(listSql, params, clazz);
-        // 查询总记录数
-        int totalCount = Integer.valueOf(this.queryOneBySql(countSql, params).toString());
-        // 总页数
-        int pageCount = totalCount / pageSize + (totalCount % pageSize > 0 ? 1 : 0);
+    @Override
+    public <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, final Class<T> clazz, int pageNum, int pageSize) {
+        return this.queryPageBySql(sql, params, pageNum, pageSize, new QueryRunner<T>() {
+            @Override
+            public List<T> query(String sql, Map<String, Object> params) {
+                return queryBySql(sql, params, clazz);
+            }
+        });
+    }
 
-        Page<T> page = new Page<T>();
-        page.setPageNum(pageNum);
-        page.setPageSize(pageSize);
-        page.setTotalCount(totalCount);
-        page.setPageCount(pageCount);
-        page.setResultList(resultList);
-
-        return page;
+    @Override
+    public <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, final RowMapper<T> mapper, int pageNum, int pageSize) {
+        return this.queryPageBySql(sql, params, pageNum, pageSize, new QueryRunner<T>() {
+            @Override
+            public List<T> query(String sql, Map<String, Object> params) {
+                return queryBySql(sql, params, mapper);
+            }
+        });
     }
 
     @Override
@@ -264,6 +283,40 @@ public class JpaDao implements Dao {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 根据sql语句分页查询，通过QueryRunner来查询结果集
+     */
+    private <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, int pageNum, int pageSize, QueryRunner<T> runner) {
+        SqlSupport sqlSupport = SqlSupportFactory.getSupport();
+        String listSql = sqlSupport.getPageSql(sql, pageNum, pageSize);
+        String countSql = sqlSupport.getTotalSql(sql);
+
+        // 查询分页
+        List<T> resultList = runner.query(listSql, params);
+        // 查询总记录数
+        int totalCount = Integer.valueOf(this.queryOneBySql(countSql, params).toString());
+        // 总页数
+        int pageCount = totalCount / pageSize + (totalCount % pageSize > 0 ? 1 : 0);
+
+        Page<T> page = new Page<T>();
+        page.setPageNum(pageNum);
+        page.setPageSize(pageSize);
+        page.setTotalCount(totalCount);
+        page.setPageCount(pageCount);
+        page.setResultList(resultList);
+
+        return page;
+    }
+
+    /**
+     * 结果集查询器
+     */
+    private interface QueryRunner<T extends Serializable> {
+
+        List<T> query(String sql, Map<String, Object> params);
+
     }
 
     /*====================== Getters and Setters ======================*/

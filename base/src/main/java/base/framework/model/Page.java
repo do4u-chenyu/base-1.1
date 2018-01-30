@@ -3,6 +3,7 @@ package base.framework.model;
 
 import org.springframework.beans.BeanUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * Created by cl on 2017/4/12.
  * 分页对象
  */
-public class Page<T> {
+public class Page<T extends Serializable> implements Serializable {
 
     /**
      * 当前页数
@@ -46,7 +47,7 @@ public class Page<T> {
      * @param clazz
      * @return
      */
-    public <V> Page<V> cloneTo(Class<V> clazz) {
+    public <V extends Serializable> Page<V> cloneTo(Class<V> clazz) {
         try {
             Page<V> page = new Page<V>();
             page.setPageNum(pageNum);
