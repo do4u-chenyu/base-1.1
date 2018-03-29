@@ -23,28 +23,30 @@ public class SqlSupportFactory {
      */
     private static String defaultType;
 
-    private static Map<String, SqlSupport> supports;
+    private static Map<String, SqlSupport> supports = new HashMap<String, SqlSupport>();
 
     private SqlSupportFactory() {
     }
 
     static {
-        supports = new HashMap<String, SqlSupport>();
-        supports.put(TYPE_ORACLE, new OracleSqlSupport());
-        supports.put(TYPE_MYSQL, new MySQLSqlSupport());
-        supports.put(TYPE_POSTGRESQL, new PostgreSQLSqlSupport());
-        supports.put(TYPE_H2, new MySQLSqlSupport());
+        registerSupport(TYPE_ORACLE, new OracleSqlSupport());
+        registerSupport(TYPE_MYSQL, new MySQLSqlSupport());
+        registerSupport(TYPE_POSTGRESQL, new PostgreSQLSqlSupport());
+        registerSupport(TYPE_H2, new MySQLSqlSupport());
+    }
+
+    /**
+     * 注册数据库SQL支持
+     */
+    public static void registerSupport(String type, SqlSupport support) {
+        supports.put(type.toLowerCase(), support);
     }
 
     /**
      * 获取数据库SQL支持
      */
     public static SqlSupport getSupport(String type) {
-        SqlSupport support = supports.get(type);
-        if (null == support) {
-            support = getSupport();
-        }
-        return support;
+        return supports.get(type.toLowerCase());
     }
 
     /**
@@ -53,7 +55,7 @@ public class SqlSupportFactory {
     public static SqlSupport getSupport() {
         // 未配置默认数据库类型时，默认Oracle
         String type = null != defaultType ? defaultType : TYPE_ORACLE;
-        return supports.get(type);
+        return getSupport(type);
     }
 
     /**
