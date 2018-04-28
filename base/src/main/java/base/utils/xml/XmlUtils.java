@@ -1,11 +1,9 @@
 package base.utils.xml;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.dom4j.Branch;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -37,17 +35,19 @@ public class XmlUtils {
     /**
      * Map转换成XML
      */
-    public static String map2Xml(Map<String, Object> map) {
+    public static String map2Xml(Map<String, Object> map) throws Exception {
         return map2Xml(map, null);
     }
 
     /**
      * Map转换成XML
      */
-    public static String map2Xml(Map<String, Object> map, KeyValHandler handler) {
-        StringBuilder xml = new StringBuilder();
-        map2Xml(map, xml, handler);
-        return xml.toString();
+    public static String map2Xml(Map<String, Object> map, KeyValHandler handler) throws Exception {
+        Document doc = DocumentHelper.createDocument();
+        map2Xml(map, doc, handler);
+        StringWriter sw = new StringWriter();
+        doc.write(sw);
+        return sw.toString();
     }
 
     /**
@@ -159,32 +159,33 @@ public class XmlUtils {
      * Map转换成XML
      */
     @SuppressWarnings("unchecked")
-    private static void map2Xml(Map<String, Object> map, StringBuilder xml, KeyValHandler handler) {
+    private static void map2Xml(Map<String, Object> map, Branch parentNode, KeyValHandler handler) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String nodeName = entry.getKey();
-            Object node = entry.getValue();
+            String name = entry.getKey();
+            Object value = entry.getValue();
 
             if (null != handler) {
-                Object[] rs = handler.handle(nodeName, node);
-                nodeName = (String) rs[0];
-                node = rs[1];
+                Object[] rs = handler.handle(name, value);
+                name = (String) rs[0];
+                value = rs[1];
             }
 
-            if (node instanceof List) {
-                List<Map<String, Object>> list = (List<Map<String, Object>>) node;
-                for (Map<String, Object> m : list) {
-                    xml.append("<" + nodeName + ">");
-                    map2Xml(m, xml, handler);
-                    xml.append("</" + nodeName + ">");
+            if (value instanceof Collection) {
+                Collection<Object> list = (Collection<Object>) value;
+                for (Object o : list) {
+                    Element node = parentNode.addElement(name);
+                    if (o instanceof Map) {
+                        map2Xml((Map<String, Object>) o, node, handler);
+                    } else if (null != o) {
+                        node.setText(o.toString());
+                    }
                 }
-            } else {
-                xml.append("<" + nodeName + ">");
-                if (node instanceof Map) {
-                    map2Xml((Map<String, Object>) node, xml, handler);
-                } else {
-                    xml.append(node.toString());
-                }
-                xml.append("</" + nodeName + ">");
+            } else if (value instanceof Map) {
+                Element node = parentNode.addElement(name);
+                map2Xml((Map<String, Object>) value, node, handler);
+            } else if (null != value) {
+                Element node = parentNode.addElement(name);
+                node.setText(value.toString());
             }
         }
     }

@@ -229,11 +229,4 @@ public class ObjectUtils {
         }
     }
 
-    /**
-     * 根据类名创建该类的实例
-     */
-    public static <T> T createClass(String className, Class<T> clazz) {
-        return (T) createClass(className);
-    }
-
 }
