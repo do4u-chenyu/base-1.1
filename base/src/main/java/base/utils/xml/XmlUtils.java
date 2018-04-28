@@ -43,8 +43,21 @@ public class XmlUtils {
      * Map转换成XML
      */
     public static String map2Xml(Map<String, Object> map, KeyValHandler handler) throws Exception {
+        return map2Xml(map, true, handler);
+    }
+
+    /**
+     * Map转换成XML
+     *
+     * @param map        待转换的Map
+     * @param ignoreNull 是否忽略空节点
+     * @param handler    键值对处理器
+     * @return
+     * @throws Exception
+     */
+    public static String map2Xml(Map<String, Object> map, boolean ignoreNull, KeyValHandler handler) throws Exception {
         Document doc = DocumentHelper.createDocument();
-        map2Xml(map, doc, handler);
+        map2Xml(map, doc, ignoreNull, handler);
         StringWriter sw = new StringWriter();
         doc.write(sw);
         return sw.toString();
@@ -157,9 +170,15 @@ public class XmlUtils {
 
     /**
      * Map转换成XML
+     *
+     * @param map        待转换的Map
+     * @param parentNode 父节点
+     * @param ignoreNull 是否忽略空节点
+     * @param handler    键值对处理器
      */
     @SuppressWarnings("unchecked")
-    private static void map2Xml(Map<String, Object> map, Branch parentNode, KeyValHandler handler) {
+    private static void map2Xml(Map<String, Object> map, Branch parentNode, boolean ignoreNull,
+                                KeyValHandler handler) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();
@@ -173,19 +192,31 @@ public class XmlUtils {
             if (value instanceof Collection) {
                 Collection<Object> list = (Collection<Object>) value;
                 for (Object o : list) {
-                    Element node = parentNode.addElement(name);
-                    if (o instanceof Map) {
-                        map2Xml((Map<String, Object>) o, node, handler);
-                    } else if (null != o) {
-                        node.setText(o.toString());
-                    }
+                    // List中的子元素只能是Map或基本类型数据
+                    map2Xml(name, o, parentNode, ignoreNull, handler);
                 }
-            } else if (value instanceof Map) {
+            } else {
+                map2Xml(name, value, parentNode, ignoreNull, handler);
+            }
+        }
+    }
+
+    /**
+     * Map中的键值对解析成xml节点
+     */
+    private static void map2Xml(String name, Object value, Branch parentNode, boolean ignoreNull,
+                                KeyValHandler handler) {
+        if (value instanceof Map) {
+            Map<String, Object> valueMap = (Map<String, Object>) value;
+            if (valueMap.size() > 0 || (!ignoreNull)) {
                 Element node = parentNode.addElement(name);
-                map2Xml((Map<String, Object>) value, node, handler);
-            } else if (null != value) {
+                map2Xml(valueMap, node, ignoreNull, handler);
+            }
+        } else {
+            String text = null == value ? "" : value.toString();
+            if (text.trim().length() > 0 || (!ignoreNull)) {
                 Element node = parentNode.addElement(name);
-                node.setText(value.toString());
+                node.setText(text);
             }
         }
     }
