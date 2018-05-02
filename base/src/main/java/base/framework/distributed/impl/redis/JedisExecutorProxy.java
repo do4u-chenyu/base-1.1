@@ -34,10 +34,16 @@ public class JedisExecutorProxy implements InvocationHandler {
         }
     }
 
+    /**
+     * 创建JedisExecutor接口的动态代理
+     *
+     * @param jedisPool jedis连接池
+     * @return
+     */
     public static JedisExecutor createProxy(JedisPool jedisPool) {
-        JedisExecutorProxy proxy = new JedisExecutorProxy(jedisPool);
-        return (JedisExecutor) Proxy.newProxyInstance(proxy.getClass().getClassLoader(),
-                new Class<?>[]{JedisExecutor.class}, proxy);
+        JedisExecutorProxy handler = new JedisExecutorProxy(jedisPool);
+        return (JedisExecutor) Proxy.newProxyInstance(handler.getClass().getClassLoader(),
+                new Class<?>[]{JedisExecutor.class}, handler);
     }
 
 }
