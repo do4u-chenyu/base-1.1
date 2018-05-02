@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sqls>
+<sqls type="groovy">
     <sql id="TestTab.query" type="groovy">
     <![CDATA[
         select * from test_tab t where 1 =1

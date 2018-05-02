@@ -3,6 +3,7 @@ package base.framework.dao.sql.template;
 import base.framework.dao.sql.template.engines.FreeMarkerSqlTemplateEngine;
 import base.framework.dao.sql.template.engines.GroovySqlTemplateEngine;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -28,21 +29,22 @@ public class SqlTemplateManager {
     /* SQL模板引擎容器 */
     private Map<String, SqlTemplateEngine> engineMap = new HashMap<String, SqlTemplateEngine>();
 
-    /* 默认的模板类型 */
-    private String defaultTemplateType;
-
     /* SQL配置文件路径 */
     private String sqlPath;
 
     /* 模板容器 */
     private Map<String, SqlTemplate> templateMap = new HashMap<String, SqlTemplate>();
 
-    public SqlTemplateManager(String sqlPath, String defaultTemplateType) {
+    public SqlTemplateManager() {
         // 注册SQL模板引擎
-        engineMap.put("groovy", new GroovySqlTemplateEngine());
-        engineMap.put("freemarker", new FreeMarkerSqlTemplateEngine());
+        registerEngine("groovy", new GroovySqlTemplateEngine());
+        registerEngine("freemarker", new FreeMarkerSqlTemplateEngine());
+    }
 
-        this.defaultTemplateType = defaultTemplateType;
+    /**
+     * 加载sql配置文件
+     */
+    public void load(String sqlPath) {
         this.sqlPath = sqlPath;
 
         load();
@@ -76,6 +78,13 @@ public class SqlTemplateManager {
     }
 
     /**
+     * 注册SQL模板引擎
+     */
+    public void registerEngine(String type, SqlTemplateEngine engine) {
+        engineMap.put(type, engine);
+    }
+
+    /**
      * 加载sql配置文件
      * 一般为classpath:xxx/xx/*.xml这样格式的路径；多模块多classpath时，格式如：classpath*:xxx/xx/*.xml；
      */
@@ -91,7 +100,7 @@ public class SqlTemplateManager {
                 InputStream in = r.getInputStream();
                 streamList.add(in);
                 Document doc = saxReader.read(in);
-                loadConfig(doc);
+                loadConfig(r, doc);
             }
         } catch (Exception e) {
             logger.error("加载" + sqlPath + "下的配置文件失败\n" + e.getLocalizedMessage(), e);
@@ -105,16 +114,22 @@ public class SqlTemplateManager {
 
     /**
      * 加载sql模板配置，xml配置文件格式如下：
-     * <sqls>
-     * <sql id="TestTab.query" type="groovy">
+     * <sqls type="groovy">
+     * <sql id="TestTab.query" type="freemarker">
      * <![CDATA[
      * select * from test_tab
      * ]]>
      * </sql>
      * </sqls>
      */
-    private void loadConfig(Document doc) {
-        List<?> list = doc.getRootElement().elements();
+    private void loadConfig(Resource resource, Document doc) {
+        Element root = doc.getRootElement();
+        String defaultType = root.attributeValue("type");
+        if (StringUtils.isBlank(defaultType)) {
+            throw new RuntimeException(resource.getFilename() + "配置文件sqls节点type属性缺失");
+        }
+
+        List<?> list = root.elements();
         for (Object o : list) {
             Element e = (Element) o;
             String id = e.attributeValue("id");
@@ -124,7 +139,7 @@ public class SqlTemplateManager {
             SqlTemplate template = new SqlTemplate();
             template.setId(id);
             // 没有指定模板类型时使用默认类型
-            template.setType(null != type ? type : defaultTemplateType);
+            template.setType(null != type ? type : defaultType);
             template.setTpl(tpl);
 
             templateMap.put(id, template);

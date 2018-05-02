@@ -25,9 +25,26 @@ public class JpaDao implements Dao {
 
     private EntityManager entityManager;
 
+    /* SQL模板管理器 */
     private SqlTemplateManager sqlTemplateManager;
 
+    /* 数据库类型 */
     private String dbType;
+
+    public JpaDao(EntityManager entityManager, String dbType, String sqlPath) {
+        this.entityManager = entityManager;
+        this.dbType = dbType;
+
+        // 初始化SQL模板引擎，加载配置
+        sqlTemplateManager = new SqlTemplateManager();
+        sqlTemplateManager.load(sqlPath);
+    }
+
+    public JpaDao(EntityManager entityManager, SqlTemplateManager sqlTemplateManager, String dbType) {
+        this.entityManager = entityManager;
+        this.sqlTemplateManager = sqlTemplateManager;
+        this.dbType = dbType;
+    }
 
     @Override
     public <T> T save(T entity) {
@@ -321,19 +338,6 @@ public class JpaDao implements Dao {
 
         List<T> query(String sql, Map<String, Object> params);
 
-    }
-
-    /*====================== Getters and Setters ======================*/
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public void setDbType(String dbType) {
-        this.dbType = dbType;
-    }
-
-    public void setSqlTemplateManager(SqlTemplateManager sqlTemplateManager) {
-        this.sqlTemplateManager = sqlTemplateManager;
     }
 
 }
