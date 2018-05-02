@@ -31,13 +31,13 @@ public class JpaDaoConfig {
         String templateType = env.getProperty("dao.sql.template", "groovy");
         String sqlPath = env.getProperty("dao.sql.path", "classpath:config/sql/*.xml");
 
-        // SQL语句支持工厂设置默认数据库类型
-        SqlSupportFactory.setDefaultType(dbType);
-        // SQL模板管理器初始化
-        SqlTemplateManager.init(sqlPath, templateType);
+        // 初始化SQL模板管理器
+        SqlTemplateManager sqlTemplateManager = new SqlTemplateManager(sqlPath, templateType);
 
         JpaDao dao = new JpaDao();
         dao.setEntityManager(entityManager);
+        dao.setSqlTemplateManager(sqlTemplateManager);
+        dao.setDbType(dbType);
 
         return dao;
     }

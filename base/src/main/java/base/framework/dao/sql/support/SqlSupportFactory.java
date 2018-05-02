@@ -18,11 +18,6 @@ public class SqlSupportFactory {
     private final static String TYPE_POSTGRESQL = "PostgreSQL";
     private final static String TYPE_H2 = "H2";
 
-    /**
-     * 当前的默认数据库类型
-     */
-    private static String defaultType;
-
     private static Map<String, SqlSupport> supports = new HashMap<String, SqlSupport>();
 
     private SqlSupportFactory() {
@@ -46,23 +41,11 @@ public class SqlSupportFactory {
      * 获取数据库SQL支持
      */
     public static SqlSupport getSupport(String type) {
-        return supports.get(type.toLowerCase());
-    }
-
-    /**
-     * 获取默认的SQL支持
-     */
-    public static SqlSupport getSupport() {
-        // 未配置默认数据库类型时，默认Oracle
-        String type = null != defaultType ? defaultType : TYPE_ORACLE;
-        return getSupport(type);
-    }
-
-    /**
-     * 设置当前默认的数据库类型
-     */
-    public static void setDefaultType(String type) {
-        defaultType = type;
+        SqlSupport support = supports.get(type.toLowerCase());
+        if (null == support) {
+            throw new RuntimeException("Database type[" + type + "] is not supported.");
+        }
+        return support;
     }
 
 }

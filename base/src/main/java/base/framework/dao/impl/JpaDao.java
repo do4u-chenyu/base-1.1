@@ -25,6 +25,10 @@ public class JpaDao implements Dao {
 
     private EntityManager entityManager;
 
+    private SqlTemplateManager sqlTemplateManager;
+
+    private String dbType;
+
     @Override
     public <T> T save(T entity) {
         entityManager.persist(entity);
@@ -67,55 +71,55 @@ public class JpaDao implements Dao {
     /*======================= 通过sqlId对应的sql模板查询 - begin  =======================*/
     @Override
     public Object queryOne(String sqlId, Map<String, Object> params) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryOneBySql(rs.getSql(), rs.getParamMap());
     }
 
     @Override
     public <T> T queryOne(String sqlId, Map<String, Object> params, Class<T> clazz) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryOneBySql(rs.getSql(), rs.getParamMap(), clazz);
     }
 
     @Override
     public List<Object[]> query(String sqlId, Map<String, Object> params) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryBySql(rs.getSql(), rs.getParamMap());
     }
 
     @Override
     public <T> List<T> query(String sqlId, Map<String, Object> params, Class<T> clazz) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryBySql(rs.getSql(), rs.getParamMap(), clazz);
     }
 
     @Override
     public <T> List<T> query(String sqlId, Map<String, Object> params, RowMapper<T> mapper) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryBySql(rs.getSql(), rs.getParamMap(), mapper);
     }
 
     @Override
     public Page<Object[]> queryPage(String sqlId, Map<String, Object> params, int pageNum, int pageSize) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryPageBySql(rs.getSql(), rs.getParamMap(), pageNum, pageSize);
     }
 
     @Override
     public <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, Class<T> clazz, int pageNum, int pageSize) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryPageBySql(rs.getSql(), rs.getParamMap(), clazz, pageNum, pageSize);
     }
 
     @Override
     public <T extends Serializable> Page<T> queryPage(String sqlId, Map<String, Object> params, RowMapper<T> mapper, int pageNum, int pageSize) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.queryPageBySql(rs.getSql(), rs.getParamMap(), mapper, pageNum, pageSize);
     }
 
     @Override
     public int execute(String sqlId, Map<String, Object> params) {
-        SqlResult rs = SqlTemplateManager.getSqlResult(sqlId, params);
+        SqlResult rs = sqlTemplateManager.getSqlResult(sqlId, params);
         return this.executeBySql(rs.getSql(), rs.getParamMap());
     }
     /*======================= 通过sqlId对应的sql模板查询 - end  =======================*/
@@ -289,7 +293,7 @@ public class JpaDao implements Dao {
      * 根据sql语句分页查询，通过QueryRunner来查询结果集
      */
     private <T extends Serializable> Page<T> queryPageBySql(String sql, Map<String, Object> params, int pageNum, int pageSize, QueryRunner<T> runner) {
-        SqlSupport sqlSupport = SqlSupportFactory.getSupport();
+        SqlSupport sqlSupport = SqlSupportFactory.getSupport(dbType);
         String listSql = sqlSupport.getPageSql(sql, pageNum, pageSize);
         String countSql = sqlSupport.getTotalSql(sql);
 
@@ -322,6 +326,14 @@ public class JpaDao implements Dao {
     /*====================== Getters and Setters ======================*/
     public void setEntityManager(EntityManager entityManager) {
         this.entityManager = entityManager;
+    }
+
+    public void setDbType(String dbType) {
+        this.dbType = dbType;
+    }
+
+    public void setSqlTemplateManager(SqlTemplateManager sqlTemplateManager) {
+        this.sqlTemplateManager = sqlTemplateManager;
     }
 
 }

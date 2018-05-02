@@ -11,7 +11,6 @@ import org.dom4j.io.SAXReader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,36 +25,61 @@ public class SqlTemplateManager {
 
     private final static Log logger = LogFactory.getLog(SqlTemplateManager.class);
 
+    /* SQL模板引擎容器 */
+    private Map<String, SqlTemplateEngine> engineMap = new HashMap<String, SqlTemplateEngine>();
+
     /* 默认的模板类型 */
-    private static String defaultTemplateType;
+    private String defaultTemplateType;
 
     /* SQL配置文件路径 */
-    private static String sqlPath;
+    private String sqlPath;
 
     /* 模板容器 */
-    private static Map<String, SqlTemplate> templateMap = new HashMap<String, SqlTemplate>();
+    private Map<String, SqlTemplate> templateMap = new HashMap<String, SqlTemplate>();
 
-    /* SQL模板引擎容器 */
-    private static Map<String, SqlTemplateEngine> engineMap = new HashMap<String, SqlTemplateEngine>();
+    public SqlTemplateManager(String sqlPath, String defaultTemplateType) {
+        // 注册SQL模板引擎
+        engineMap.put("groovy", new GroovySqlTemplateEngine());
+        engineMap.put("freemarker", new FreeMarkerSqlTemplateEngine());
 
-    private SqlTemplateManager() {
+        this.defaultTemplateType = defaultTemplateType;
+        this.sqlPath = sqlPath;
+
+        load();
     }
 
     /**
-     * 初始化
+     * 重新加载sql配置文件
      */
-    public static void init(String path, String templateType) {
-        defaultTemplateType = templateType;
-        sqlPath = path;
+    public void reload() {
+        for (SqlTemplateEngine engine : engineMap.values()) {
+            engine.clearCache();
+        }
+        templateMap.clear();
 
         load();
+    }
+
+    /**
+     * 根据sqlId获取sql模板处理结果
+     */
+    public SqlResult getSqlResult(String sqlId, Map<String, Object> params) {
+        SqlTemplate template = templateMap.get(sqlId);
+        if (null == template) {
+            throw new RuntimeException("找不到sqlId：" + sqlId + "对应的sql配置");
+        }
+
+        // 调用对应的SQL模板引擎执行，创建SQL
+        String type = template.getType();
+        SqlTemplateEngine engine = engineMap.get(type);
+        return engine.make(template, params);
     }
 
     /**
      * 加载sql配置文件
      * 一般为classpath:xxx/xx/*.xml这样格式的路径；多模块多classpath时，格式如：classpath*:xxx/xx/*.xml；
      */
-    public static void load() {
+    private void load() {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         SAXReader saxReader = new SAXReader();
         // 待关闭的流列表
@@ -80,32 +104,6 @@ public class SqlTemplateManager {
     }
 
     /**
-     * 重新加载sql配置文件
-     */
-    public static void reload() {
-        for (SqlTemplateEngine engine : engineMap.values()) {
-            engine.clearCache();
-        }
-
-        load();
-    }
-
-    /**
-     * 根据sqlId获取sql模板处理结果
-     */
-    public static SqlResult getSqlResult(String sqlId, Map<String, Object> params) {
-        SqlTemplate template = templateMap.get(sqlId);
-        if (null == template) {
-            throw new RuntimeException("找不到sqlId：" + sqlId + "对应的sql配置");
-        }
-
-        // 调用对应的SQL模板引擎执行，创建SQL
-        String type = template.getType();
-        SqlTemplateEngine engine = engineMap.get(type);
-        return engine.make(template, params);
-    }
-
-    /**
      * 加载sql模板配置，xml配置文件格式如下：
      * <sqls>
      * <sql id="TestTab.query" type="groovy">
@@ -115,7 +113,7 @@ public class SqlTemplateManager {
      * </sql>
      * </sqls>
      */
-    private static void loadConfig(Document doc) {
+    private void loadConfig(Document doc) {
         List<?> list = doc.getRootElement().elements();
         for (Object o : list) {
             Element e = (Element) o;
@@ -131,12 +129,6 @@ public class SqlTemplateManager {
 
             templateMap.put(id, template);
         }
-    }
-
-    static {
-        // 注册SQL模板引擎
-        engineMap.put("groovy", new GroovySqlTemplateEngine());
-        engineMap.put("freemarker", new FreeMarkerSqlTemplateEngine());
     }
 
 }
