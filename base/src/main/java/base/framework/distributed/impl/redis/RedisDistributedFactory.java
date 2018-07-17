@@ -1,6 +1,7 @@
 package base.framework.distributed.impl.redis;
 
 import base.framework.distributed.DistributedFactory;
+import base.framework.distributed.Hash;
 import base.framework.distributed.Lock;
 import base.framework.distributed.Queue;
 import redis.clients.jedis.JedisPool;
@@ -27,6 +28,11 @@ public class RedisDistributedFactory implements DistributedFactory {
     @Override
     public <T> Queue<T> createQueue(Serializable id, Class<T> clazz) {
         return new RedisQueue<T>(jedisExecutor, id.toString(), clazz);
+    }
+
+    @Override
+    public <T> Hash<T> createHash(Serializable id, Class<T> clazz) {
+        return new RedisHash<T>(jedisExecutor, id.toString(), clazz);
     }
 
 }

@@ -1,6 +1,7 @@
 package test
 
 import base.framework.distributed.DistributedFactory
+import base.framework.distributed.Hash
 import base.framework.distributed.Lock
 import base.framework.distributed.Queue
 import base.framework.distributed.impl.redis.RedisDistributedFactory
@@ -64,8 +65,9 @@ class TestDistributed {
             ]);
         }
 
-        int n = 500;
+        int n = 1500;
 
+        long startTime = System.currentTimeMillis();
         // JUnit不支持多线程，需要一个总的倒数锁让主线程阻塞
         CountDownLatch totalCountDownLatch = new CountDownLatch(n);
         // 为了模拟所有线程同时开始执行，需要一个倒数锁
@@ -77,6 +79,32 @@ class TestDistributed {
         countDownLatch.countDown();
 
         totalCountDownLatch.await();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("cost: " + (endTime - startTime));
+    }
+
+    /**
+     * 测试Hash表
+     */
+    @Test
+    public void testHash() {
+        Hash<Map> hash = factory.createHash("test_hash", Map.class);
+        hash.put("a", [
+                name: "test-a",
+                age : 1
+        ]);
+        hash.put("b", [
+                name: "test-b",
+                age : 1
+        ]);
+
+        println "test get: " + hash.get("a");
+        println "test size: " + hash.size();
+        println "test keys: " + hash.keys();
+        println "test remove: " + hash.remove("a");
+
+//        hash.clear();
     }
 
     /**
