@@ -28,6 +28,16 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+
+        <pluginManagement>
+            <plugins>
+                <!-- 跳过单元测试打包 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <dependencies>

@@ -1,6 +1,5 @@
 package base.config;
 
-import base.framework.web.interceptor.CommonInterceptor;
 import base.framework.web.mvc.mapping.ExtRequestMappingHandlerMapping;
 import base.framework.web.mvc.FastJsonConverter;
 import base.framework.web.mvc.mapping.MappingProperties;
@@ -253,8 +252,6 @@ public class ExtMvcAutoConfig extends WebMvcConfigurerAdapter {
     /*======================================= 定义功能扩展 - begin =======================================*/
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 增加拦截器，添加ctx上下文
-        registry.addInterceptor(new CommonInterceptor());
     }
 
     @Override
